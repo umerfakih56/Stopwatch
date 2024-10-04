@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Timer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for the clock shape and animations */
+        .clock-circle {
+            width: 300px;
+            height: 300px;
+            border: 8px solid #4ade80; /* Lime green border */
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: linear-gradient(135deg, #3b82f6, #06b6d4);
+            animation: pulse 1s infinite;
+        }
+
+        /* Transition animation for the clock */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .timer-text {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #f3f4f6; /* Light gray */
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+    <script>
+        let timerInterval;
+        let isCountingUp = false;
+        let initialTime = 0;
+        let totalTime = 0;
+        let timePassed = 0;
+
+        function setInitialTime() {
+            const userMinutes = parseInt(document.getElementById("minutes").value);
+            const userSeconds = parseInt(document.getElementById("seconds").value);
+            initialTime = (userMinutes * 60) + userSeconds;
+            totalTime = initialTime;
+            timePassed = 0; // Reset time passed for count up
+        }
+
+        function startTimer() {
+            setInitialTime(); // Set initial time when starting
+            const countdownMode = document.getElementById("mode").value === "up";
+            isCountingUp = countdownMode;
+
+            const timerDisplay = document.getElementById("timer-display");
+            clearInterval(timerInterval); // Clear existing intervals
+
+            timerInterval = setInterval(() => {
+                if (!isCountingUp) {
+                    totalTime--; // Countdown mode
+                } else {
+                    timePassed++; // Countup mode
+                }
+
+                let minutes = countdownMode ? Math.floor(timePassed / 60) : Math.floor(totalTime / 60);
+                let seconds = countdownMode ? timePassed % 60 : totalTime % 60;
+
+                const disclaimer = document.getElementById("disclaimer");
+
+                if (totalTime <= 0 && !isCountingUp) {
+                    clearInterval(timerInterval);
+                    timerDisplay.textContent = "00:00";
+                    disclaimer.textContent = "Your time is finished!";
+                } else {
+                    timerDisplay.textContent = `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+                    disclaimer.textContent = countdownMode
+                        ? `Time passed: ${minutes} minutes, ${seconds} seconds`
+                        : `Time left: ${minutes} minutes, ${seconds} seconds`;
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            totalTime = 0; // Clear total time
+            timePassed = 0; // Clear time passed
+            document.getElementById("timer-display").textContent = "00:00"; // Reset display
+            document.getElementById("disclaimer").textContent = ""; // Clear disclaimer
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            totalTime = initialTime; // Reset totalTime to initial time
+            timePassed = 0; // Reset timePassed
+            document.getElementById("timer-display").textContent = "00:00"; // Reset display
+            document.getElementById("disclaimer").textContent = ""; // Clear disclaimer
+        }
+    </script>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center h-screen">
+    <div class="flex flex-col items-center space-y-8">
+        <h1 class="text-4xl font-bold text-center text-green-400">Interactive Countdown/Up Timer</h1>
+
+        <!-- User Input Section -->
+        <div class="flex space-x-4">
+            <input id="minutes" type="number" placeholder="Minutes" class="p-2 rounded bg-gray-800 text-white border border-gray-500" min="0" value="0">
+            <input id="seconds" type="number" placeholder="Seconds" class="p-2 rounded bg-gray-800 text-white border border-gray-500" min="0" value="0">
+            <select id="mode" class="p-2 rounded bg-gray-800 text-white border border-gray-500">
+                <option value="down">Countdown</option>
+                <option value="up">Count Up</option>
+            </select>
+            <button onclick="startTimer()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">Start</button>
+            <button onclick="stopTimer()" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">Stop</button>
+            <button onclick="resetTimer()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Reset</button>
+        </div>
+
+        <!-- Clock Shape with Timer -->
+        <div class="clock-circle">
+            <div id="timer-display" class="timer-text">00:00</div>
+        </div>
+
+        <!-- Disclaimer -->
+        <div id="disclaimer" class="text-xl text-gray-400 mt-4">
+            Time left: 0 minutes, 0 seconds
+        </div>
+    </div>
+</body>
+</html>
